@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: yizhan-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root123456
+      MYSQL_DATABASE: yizhan
+    volumes:
+      - ./mysql/init:/docker-entrypoint-initdb.d
+      - mysql_data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --innodb-buffer-pool-size=256M
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot123456"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    mem_limit: 512m
+    networks: [yizhan-net]
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: yizhan-redis
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    mem_limit: 256m
+    networks: [yizhan-net]
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    container_name: yizhan-minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    mem_limit: 384m
+    networks: [yizhan-net]
+    restart: unless-stopped
+
+  backend:
+    image: yizhan-backend:1.0
+    container_name: yizhan-backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
+    mem_limit: 512m
+    networks: [yizhan-net]
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: yizhan-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on: [backend]
+    networks: [yizhan-net]
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  redis_data:
+  minio_data:
+
+networks:
+  yizhan-net:
+    driver: bridge

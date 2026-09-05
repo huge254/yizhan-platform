@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>登录 - 易栈</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+  <style>
+    .yz-auth-card { max-width: 860px; }
+    .yz-auth-side {
+      background: linear-gradient(135deg, var(--yz-primary), var(--yz-primary-2) 60%, #c084fc);
+      color: #fff;
+      padding: 3rem 2.4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .yz-auth-side::before {
+      content: "";
+      position: absolute;
+      width: 260px; height: 260px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.12);
+      top: -110px; right: -90px;
+    }
+    .yz-auth-side::after {
+      content: "";
+      position: absolute;
+      width: 150px; height: 150px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.10);
+      bottom: -60px; left: -40px;
+    }
+    .yz-auth-side .feats { margin-top: 1.8rem; }
+    .yz-auth-side .feat { display: flex; gap: .7rem; align-items: center; margin-bottom: 1rem; font-size: .92rem; opacity: .94; position: relative; z-index: 1; }
+    .yz-auth-side .feat .dot { width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,.18); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .yz-auth-form { padding: 2.6rem 2.4rem; }
+    @media (max-width: 767px) {
+      .yz-auth-side { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="yz-auth-wrap">
+  <div class="card yz-auth-card shadow-sm overflow-hidden">
+    <div class="row g-0">
+      <!-- 左侧品牌区 -->
+      <div class="col-md-5 yz-auth-side">
+        <h3 class="fw-bold mb-2" style="position:relative;z-index:1;">易栈 · 二手交易平台</h3>
+        <p class="mb-0" style="opacity:.88;position:relative;z-index:1;">让闲置好物，遇见新主人</p>
+        <div class="feats">
+          <div class="feat"><span class="dot">🛡️</span>实名认证 · 交易更有保障</div>
+          <div class="feat"><span class="dot">⚡</span>发布快捷 · 一分钟上架</div>
+          <div class="feat"><span class="dot">🌿</span>循环利用 · 环保又省钱</div>
+        </div>
+      </div>
+
+      <!-- 右侧表单区 -->
+      <div class="col-md-7 yz-auth-form">
+        <ul class="nav nav-pills nav-fill mb-4">
+          <li class="nav-item"><a class="nav-link active" id="tab-login" href="#" onclick="switchTab('login'); return false;">登录</a></li>
+          <li class="nav-item"><a class="nav-link" id="tab-register" href="#" onclick="switchTab('register'); return false;">注册</a></li>
+        </ul>
+
+        <div id="form-login">
+          <div class="mb-3">
+            <label class="form-label">用户名</label>
+            <input id="login-username" class="form-control" placeholder="请输入用户名">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">密码</label>
+            <input id="login-password" type="password" class="form-control" placeholder="请输入密码" onkeydown="if(event.key==='Enter') doLogin()">
+          </div>
+          <button class="btn btn-primary w-100 py-2" onclick="doLogin()">登录</button>
+          <div class="text-muted mt-3 small text-center">演示账号：admin / root123456（管理员）<br>普通用户：zhangsan / root123456</div>
+        </div>
+
+        <div id="form-register" style="display:none;">
+          <div class="mb-3">
+            <label class="form-label">用户名</label>
+            <input id="reg-username" class="form-control" placeholder="请输入用户名">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">昵称（可选）</label>
+            <input id="reg-nickname" class="form-control" placeholder="不填则默认用户名">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">密码（至少 6 位）</label>
+            <input id="reg-password" type="password" class="form-control" placeholder="请输入密码">
+          </div>
+          <button class="btn btn-primary w-100 py-2" onclick="doRegister()">注册</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="common.js"></script>
+<script>
+function switchTab(name) {
+  document.getElementById('form-login').style.display = name === 'login' ? '' : 'none';
+  document.getElementById('form-register').style.display = name === 'register' ? '' : 'none';
+  document.getElementById('tab-login').classList.toggle('active', name === 'login');
+  document.getElementById('tab-register').classList.toggle('active', name === 'register');
+}
+
+async function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!username || !password) return showToast('请输入用户名和密码', 'info');
+  const res = await api('/api/user/login', {
+    method: 'POST',
+    body: JSON.stringify({ username, password })
+  });
+  localStorage.setItem('token', res.data.token);
+  localStorage.setItem('role', res.data.role);
+  localStorage.setItem('username', res.data.username);
+  showToast('登录成功，正在进入…', 'success');
+  setTimeout(() => location.href = 'index.html', 600);
+}
+
+async function doRegister() {
+  const username = document.getElementById('reg-username').value.trim();
+  const nickname = document.getElementById('reg-nickname').value.trim();
+  const password = document.getElementById('reg-password').value;
+  if (!username || !password) return showToast('请输入用户名和密码', 'info');
+  await api('/api/user/register', {
+    method: 'POST',
+    body: JSON.stringify({ username, nickname, password })
+  });
+  showToast('注册成功，请登录', 'success');
+  switchTab('login');
+  document.getElementById('login-username').value = username;
+}
+</script>
+</body>
+</html>

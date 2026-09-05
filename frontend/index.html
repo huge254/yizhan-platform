@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>易栈 · 二手交易平台</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-dark px-3"></nav>
+
+<div class="container mt-4">
+  <!-- 大横幅：标语 + 胶囊搜索框 -->
+  <div class="yz-banner mb-4">
+    <div class="row align-items-center">
+      <div class="col-lg-6 mb-3 mb-lg-0">
+        <h1 class="display-6 mb-2">让闲置流动起来</h1>
+        <p class="lead mb-0">易栈 · 值得信赖的二手好物交易社区</p>
+      </div>
+      <div class="col-lg-6">
+        <div class="search-box">
+          <input id="keyword" placeholder="🔍 搜索你心仪的好物…" onkeydown="if(event.key==='Enter') loadGoods()">
+          <button onclick="loadGoods()">搜索</button>
+        </div>
+      </div>
+    </div>
+    <div class="yz-chip-row">
+      <span class="yz-chip" onclick="quickSearch('键盘')">⌨️ 键盘</span>
+      <span class="yz-chip" onclick="quickSearch('鼠标')">🖱️ 鼠标</span>
+      <span class="yz-chip" onclick="quickSearch('耳机')">🎧 耳机</span>
+      <span class="yz-chip" onclick="quickSearch('路由器')">📶 路由器</span>
+      <span class="yz-chip" onclick="quickSearch('')">🗂️ 全部好物</span>
+    </div>
+  </div>
+
+  <div class="yz-section-title mb-3">
+    <span class="bar"></span>
+    <h5 class="mb-0 me-2">在售好物</h5>
+    <span class="badge text-bg-light" id="goods-count"></span>
+  </div>
+  <div class="row" id="goods-grid"></div>
+
+  <div class="yz-footer">易栈 · 二手交易平台演示环境 · 数据存储于本地虚拟机</div>
+</div>
+
+<script src="common.js"></script>
+<script>
+renderNav('易栈', [{ text: '＋ 发布商品', href: 'publish.html' }]);
+
+function skeleton() {
+  let html = '';
+  for (let i = 0; i < 4; i++) {
+    html += `<div class="col-md-3 mb-4"><div class="yz-skeleton">
+      <div class="sk-img sk-shimmer"></div>
+      <div class="sk-line sk-shimmer" style="width:75%"></div>
+      <div class="sk-line sk-shimmer" style="width:45%"></div>
+      <div class="sk-line sk-shimmer" style="width:60%;margin-bottom:16px"></div>
+    </div></div>`;
+  }
+  document.getElementById('goods-grid').innerHTML = html;
+}
+
+function quickSearch(kw) {
+  document.getElementById('keyword').value = kw;
+  loadGoods();
+}
+
+async function loadGoods() {
+  const keyword = document.getElementById('keyword').value.trim();
+  skeleton();
+  const url = '/api/goods/list' + (keyword ? '?keyword=' + encodeURIComponent(keyword) : '');
+  const res = await api(url);
+  const list = res.data.list;
+  document.getElementById('goods-count').textContent = '共 ' + list.length + ' 件';
+  const grid = document.getElementById('goods-grid');
+  if (!list.length) {
+    grid.innerHTML = '<div class="col-12"><div class="yz-empty"><span class="emoji">🛍️</span>暂无上架商品，快去发布一个吧</div></div>';
+    return;
+  }
+  grid.innerHTML = list.map(g => `
+    <div class="col-md-3 mb-4">
+      <div class="card h-100 yz-card-hover overflow-hidden">
+        ${g.imageUrl
+          ? `<div class="img-wrap"><img src="${g.imageUrl}" class="card-img-top" style="height:190px;object-fit:cover;" onerror="this.style.display='none'"></div>`
+          : '<div class="card-img-top d-flex align-items-center justify-content-center text-muted" style="height:190px;background:#f3f4f6;">无图片</div>'}
+        <div class="card-body pb-2">
+          <h6 class="card-title text-truncate mb-1" title="${g.title}">${g.title}</h6>
+          <div class="yz-price fs-5">￥${g.price}</div>
+          <div class="text-muted small">卖家：${g.seller || '-'}</div>
+        </div>
+        <div class="card-footer bg-white border-0 pb-3 pt-0">
+          <a href="detail.html?id=${g.id}" class="btn btn-primary btn-sm w-100">查看详情</a>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+loadGoods();
+</script>
+</body>
+</html>

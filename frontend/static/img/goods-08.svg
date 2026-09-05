@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="450" viewBox="0 0 600 450">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#64748b"/>
+      <stop offset="100%" stop-color="#94a3b8"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="450" fill="url(#g)"/>
+  <circle cx="480" cy="90" r="130" fill="rgba(255,255,255,0.12)"/>
+  <circle cx="90" cy="380" r="90" fill="rgba(255,255,255,0.10)"/>
+  <text x="300" y="215" font-family="Segoe UI, Arial, sans-serif" font-size="120" font-weight="700" fill="rgba(255,255,255,0.85)" text-anchor="middle">DK</text>
+  <text x="300" y="275" font-family="Segoe UI, Arial, sans-serif" font-size="26" fill="rgba(255,255,255,0.7)" text-anchor="middle">易栈 · 好物</text>
+</svg>
